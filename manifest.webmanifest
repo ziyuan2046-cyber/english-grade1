@@ -1,17 +1,27 @@
 {
-  "name": "一年级英语 · 上册",
-  "short_name": "一年级英语",
-  "description": "外研社《新交际英语》一年级上册：单词、课文、视频与跟读练习",
+  "id": "/english-grade1/index.html",
+  "name": "课本英语",
+  "short_name": "课本英语",
+  "description": "一年级上册",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "any",
   "background_color": "#FFF8F0",
-  "theme_color": "#6366F1",
+  "theme_color": "#FFF8F0",
   "lang": "zh-CN",
   "icons": [
-    { "src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/learning-hub/assets/app-icons/v20261105/english-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/learning-hub/assets/app-icons/v20261105/english-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
