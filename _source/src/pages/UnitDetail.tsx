@@ -91,9 +91,9 @@ export default function UnitDetail() {
       </div>
 
       <main className="px-4 pt-5">
-        {tab === 'words' && <WordsTab unit={unit} play={play} currentSrc={track?.src} />}
-        {tab === 'texts' && <TextsTab unit={unit} />}
-        {tab === 'videos' && <VideosTab unit={unit} />}
+        {tab === 'words' && <WordsTab key={unit.id} unit={unit} play={play} currentSrc={track?.src} />}
+        {tab === 'texts' && <TextsTab key={unit.id} unit={unit} />}
+        {tab === 'videos' && <VideosTab key={unit.id} unit={unit} />}
         {tab !== 'videos' && <OriginalAudioList title={tab === 'words' ? '原始单词音频（含接上页）' : '原始课文与习题音频'} description="新增资料按原文件收录，不替换上方已有学习内容。" tracks={ORIGINAL_AUDIO.filter(t => t.unitId === unit.id && (tab === 'words' ? t.group === 'words' : t.group === 'text'))} />}
       </main>
     </div>
@@ -110,6 +110,7 @@ function WordsTab({
   currentSrc?: string
 }) {
   const [flash, setFlash] = useState(false)
+  const { playing } = usePlayer()
   const isPlayingUnit = currentSrc === unit.wordsAudio
 
   return (
@@ -121,14 +122,14 @@ function WordsTab({
           }
           className="btn-3d grid h-14 w-14 place-items-center text-white shadow-key"
           style={{ background: unit.color }}
-          aria-label="播放整单元单词"
+          aria-label={isPlayingUnit && playing ? '暂停整单元单词' : '播放整单元单词'}
         >
-          <Play size={24} fill="currentColor" />
+          {isPlayingUnit && playing ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
         </button>
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg font-extrabold">整单元单词跟读</div>
           <div className="text-xs font-bold text-ink/45">
-            {isPlayingUnit ? '正在播放…' : `${unit.words.length} 个单词 · 点单词可单独发音`}
+            {isPlayingUnit ? (playing ? '正在播放…' : '已暂停 · 轻点继续') : `${unit.words.length} 个单词 · 点单词可单独发音`}
           </div>
         </div>
         <button
