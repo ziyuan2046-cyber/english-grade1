@@ -1,5 +1,5 @@
 'use strict';
-const VERSION="20261106-recovery3",CACHE="study-english-20261106-recovery3",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
+const VERSION="20261106-waiyan1",CACHE="study-english-20261106-waiyan1",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
 function canonical(url){const u=new URL(url);if(u.pathname.endsWith('/'))u.pathname+='index.html';u.search='';u.hash='';return u.href;}
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
@@ -12,7 +12,7 @@ self.addEventListener('activate',event=>event.waitUntil((async()=>{
 self.addEventListener('fetch',event=>{
  const req=event.request,u=new URL(req.url),scope=new URL(self.registration.scope);
  if(req.method!=='GET'||u.origin!==self.location.origin||!u.pathname.startsWith(scope.pathname)||req.headers.has('range')||/\.(?:mp3|mp4|m4a|ogg|wav|aac)$/i.test(u.pathname))return;
- 
+
  const nav=req.mode==='navigate',fresh=nav||/\.(?:html|webmanifest|json)$/.test(u.pathname),key=fresh?canonical(u.href):req;
  const work=(async()=>{
   const cache=await caches.open(CACHE),hit=await cache.match(key);

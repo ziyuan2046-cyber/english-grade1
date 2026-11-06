@@ -1,8 +1,8 @@
 {
   "id": "/english-grade1/index.html",
-  "name": "课本英语",
-  "short_name": "课本英语",
-  "description": "一年级上册",
+  "name": "外研英语",
+  "short_name": "外研英语",
+  "description": "外研英语：一至六年级、上下册分类，单词、课文、视频与跟读；当前开放一年级上册",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

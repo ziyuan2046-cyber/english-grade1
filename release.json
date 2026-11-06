@@ -1,0 +1,25 @@
+{
+  "version": "20261106-waiyan1",
+  "course": "外研英语",
+  "grades": 6,
+  "books": 12,
+  "available": [
+    "g1-up"
+  ],
+  "reserved": 11,
+  "originalAudioFiles": 36,
+  "existingWords": 58,
+  "existingTextTracks": 23,
+  "existingVideos": 17,
+  "contents": [
+    "Hello!",
+    "Numbers",
+    "Family",
+    "My classroom",
+    "School things",
+    "Colours",
+    "Wrap up",
+    "This is Beijing!",
+    "Appendices"
+  ]
+}
