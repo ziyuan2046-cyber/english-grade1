@@ -1,5 +1,5 @@
 'use strict';
-const VERSION="20261106-waiyan4",CACHE="study-english-20261106-waiyan4",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
+const VERSION="20261106-waiyan5",CACHE="study-english-20261106-waiyan5",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
 function canonical(url){const u=new URL(url);if(u.pathname.endsWith('/'))u.pathname+='index.html';u.search='';u.hash='';return u.href;}
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);

@@ -1,3 +1,4 @@
+import PendingLesson from '../components/PendingLesson'
 import { useBook, useBookNavigate } from '../lib/books'
 import { useCurriculum } from '../lib/useCurriculum'
 import Link from '../components/BookLink'
@@ -117,6 +118,7 @@ function WordsTab({
 }) {
   const [flash, setFlash] = useState(false)
   const { playing } = usePlayer()
+  const { partial } = useCurriculum()
   const isPlayingUnit = currentSrc === unit.wordsAudio
 
   return (
@@ -124,7 +126,7 @@ function WordsTab({
       <div className="card mb-4 flex items-center gap-3 p-3">
         <button
           onClick={() =>
-            play({ src: unit.wordsAudio, title: `${unit.code} ${unit.title} 单词跟读`, subtitle: '整单元连读', accent: unit.color })
+            play({ src: unit.wordsAudio, title: `${unit.code} ${unit.title} 单词跟读`, subtitle: partial ? '辅助合成发音 · 非教材原声' : '整单元连读', accent: unit.color })
           }
           className="btn-3d grid h-14 w-14 place-items-center text-white shadow-key"
           style={{ background: unit.color }}
@@ -133,7 +135,7 @@ function WordsTab({
           {isPlayingUnit && playing ? <Pause size={24} fill="currentColor" /> : <Play size={24} fill="currentColor" />}
         </button>
         <div className="min-w-0 flex-1">
-          <div className="font-display text-lg font-extrabold">整单元单词跟读</div>
+          <div className="font-display text-lg font-extrabold">{partial ? '词汇辅助合成发音' : '整单元单词跟读'}</div>
           <div className="text-xs font-bold text-ink/45">
             {isPlayingUnit ? (playing ? '正在播放…' : '已暂停 · 轻点继续') : `${unit.words.length} 个单词 · 点单词可单独发音`}
           </div>
@@ -277,6 +279,7 @@ function Flashcards({ unit }: { unit: Unit }) {
 function TextsTab({ unit }: { unit: Unit }) {
   const { play, track, playing, repeat, toggleRepeat } = usePlayer()
   const total = unit.texts.reduce((n, t) => n + t.tracks.length, 0)
+  if (!total) return <PendingLesson />
 
   return (
     <div>
@@ -367,6 +370,7 @@ function TextsTab({ unit }: { unit: Unit }) {
 }
 
 function VideosTab({ unit }: { unit: Unit }) {
+  if (!unit.videos.length) return <PendingLesson kind="教材视频" />
   return (
     <div className="space-y-3">
       {unit.videos.map((v, i) => (

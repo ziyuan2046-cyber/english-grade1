@@ -1,3 +1,4 @@
+import BookStatusNotice from './BookStatusNotice'
 import { BookA, BookText, Home, Headphones } from 'lucide-react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
@@ -30,6 +31,7 @@ export default function Layout() {
         <span className="text-xs font-bold text-ink/50">{book.label}</span>
       </div>
       <BookPicker compact />
+      <div className="px-4"><BookStatusNotice /></div>
     </>}
     <div key={book.id} data-book-content={book.id}><Outlet /></div>
     <MiniPlayer />

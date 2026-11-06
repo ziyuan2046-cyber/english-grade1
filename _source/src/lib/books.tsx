@@ -1,3 +1,4 @@
+import { getCurriculum } from '../data/catalog'
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { usePlayer } from './player'
@@ -6,7 +7,8 @@ import { stopSpeaking } from './speak'
 export const GRADES = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级']
 export const BOOKS = GRADES.flatMap((grade, i) => ['up', 'down'].map(term => ({
   id: `g${i + 1}-${term}`, grade: i + 1, term,
-  label: `${grade}${term === 'up' ? '上册' : '下册'}`, available: i === 0 && term === 'up',
+  label: `${grade}${term === 'up' ? '上册' : '下册'}`, available: getCurriculum(`g${i + 1}-${term}`).units.length > 0,
+  partial: getCurriculum(`g${i + 1}-${term}`).partial,
 })))
 export type Book = typeof BOOKS[number]
 const DEFAULT = BOOKS[0]

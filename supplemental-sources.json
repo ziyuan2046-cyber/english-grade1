@@ -1,0 +1,72 @@
+{
+  "status": "partial-reference-only",
+  "notice": "三册目录和词汇为第三方参考，待核对纸质教材；辅助词汇发音为合成音，不是教材原声。原文、原声和视频未补齐。",
+  "books": [
+    {
+      "book": "g1-down",
+      "units": 6,
+      "wordEntries": 96,
+      "audioKind": "synthetic-vocabulary-aid",
+      "originalTextVerified": false,
+      "originalAudioVerified": false,
+      "sources": [
+        {
+          "label": "目录参考（第三方，需与纸质书复核）",
+          "url": "https://www.cozylingo.com/content/wxt_1165"
+        },
+        {
+          "label": "词汇参考（第三方，非出版社校验）",
+          "url": "https://yyld.51jiaoxi.com/yixia/wyxjj_danci.html"
+        },
+        {
+          "label": "外研社官方网站（配套资料请按教材版本咨询）",
+          "url": "https://www.fltrp.com/"
+        }
+      ]
+    },
+    {
+      "book": "g2-up",
+      "units": 6,
+      "wordEntries": 60,
+      "audioKind": "synthetic-vocabulary-aid",
+      "originalTextVerified": false,
+      "originalAudioVerified": false,
+      "sources": [
+        {
+          "label": "目录参考（第三方，需与纸质书复核）",
+          "url": "https://www.cozylingo.com/content/wxt_1166"
+        },
+        {
+          "label": "词汇参考（第三方，非出版社校验）",
+          "url": "https://yyld.51jiaoxi.com/ershang/wyxjj_danci.html"
+        },
+        {
+          "label": "外研社官方网站（配套资料请按教材版本咨询）",
+          "url": "https://www.fltrp.com/"
+        }
+      ]
+    },
+    {
+      "book": "g2-down",
+      "units": 6,
+      "wordEntries": 62,
+      "audioKind": "synthetic-vocabulary-aid",
+      "originalTextVerified": false,
+      "originalAudioVerified": false,
+      "sources": [
+        {
+          "label": "目录参考（第三方，需与纸质书复核）",
+          "url": "https://www.cozylingo.com/content/wxt_1167"
+        },
+        {
+          "label": "词汇参考（第三方，非出版社校验）",
+          "url": "https://yyld.51jiaoxi.com/erxia/wyxjj_danci.html"
+        },
+        {
+          "label": "外研社官方网站（配套资料请按教材版本咨询）",
+          "url": "https://www.fltrp.com/"
+        }
+      ]
+    }
+  ]
+}
