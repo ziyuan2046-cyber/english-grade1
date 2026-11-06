@@ -1,5 +1,5 @@
 {
-  "version": "20261106-waiyan5",
+  "version": "20261106-waiyan6",
   "course": "外研英语",
   "grades": 6,
   "books": 12,
@@ -22,7 +22,7 @@
     "This is Beijing!",
     "Appendices"
   ],
-  "note": "三册仅新增目录与词汇参考、辅助合成发音；未收录完整原课文或教材原声，页面明确标识待补。已有一年级上册内容不变。",
+  "note": "教材选择改为紧凑入口与确认式弹窗，手机底部面板／桌面居中弹窗；单词卡正反面恢复白底。已有课程数据保持不变。",
   "partialReferenceBooks": [
     "g1-down",
     "g2-up",

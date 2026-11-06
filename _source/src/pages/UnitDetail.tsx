@@ -206,7 +206,7 @@ function Flashcards({ unit }: { unit: Unit }) {
         >
           <div
             className="relative h-full w-full overflow-hidden rounded-[32px] border border-white/70 shadow-soft"
-            style={{ background: flipped ? `linear-gradient(165deg, #ffffff, ${unit.tint})` : '#ffffff' }}
+            style={{ background: '#ffffff' }}
           >
             {/* 点上半部分翻面 */}
             <button

@@ -28,9 +28,8 @@ export default function Layout() {
     {pathname !== '/' && <>
       <div className="flex items-center justify-between gap-2 px-4 pt-4">
         <Link to={`/?book=${book.id}`} className="inline-flex rounded-full bg-white px-3 py-3 text-xs font-extrabold text-brand-600">← 外研英语</Link>
-        <span className="text-xs font-bold text-ink/50">{book.label}</span>
+        <BookPicker compact />
       </div>
-      <BookPicker compact />
       <div className="px-4"><BookStatusNotice /></div>
     </>}
     <div key={book.id} data-book-content={book.id}><Outlet /></div>
