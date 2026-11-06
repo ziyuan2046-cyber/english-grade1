@@ -1,5 +1,5 @@
 {
-  "version": "20261106-waiyan2",
+  "version": "20261106-waiyan3",
   "course": "外研英语",
   "grades": 6,
   "books": 12,
@@ -21,5 +21,6 @@
     "Wrap up",
     "This is Beijing!",
     "Appendices"
-  ]
+  ],
+  "note": "全页面教材选择器、书册隔离、动态栏目标题与计数、深链接与查询参数保留、历史导航同步"
 }

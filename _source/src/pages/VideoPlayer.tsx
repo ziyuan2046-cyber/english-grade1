@@ -1,3 +1,6 @@
+import { useBookNavigate } from '../lib/books'
+import { useCurriculum } from '../lib/useCurriculum'
+import Link from '../components/BookLink'
 import {
   ArrowLeft,
   ChevronRight,
@@ -11,8 +14,7 @@ import {
   Video,
 } from 'lucide-react'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { getUnit } from '../data/curriculum'
+import { useParams } from 'react-router-dom'
 import { usePlayer } from '../lib/player'
 
 const fmt = (s: number) => {
@@ -23,8 +25,11 @@ const fmt = (s: number) => {
 }
 
 export default function VideoPlayer() {
+ const { units } = useCurriculum()
+ const getUnit = (id: number) => units.find(unit => unit.id === id)
+
   const { unitId, videoId } = useParams()
-  const nav = useNavigate()
+  const nav = useBookNavigate()
   const unit = getUnit(Number(unitId))
   const video = unit?.videos.find((v) => v.id === videoId)
 

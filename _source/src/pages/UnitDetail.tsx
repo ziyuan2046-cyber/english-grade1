@@ -1,11 +1,13 @@
+import { useBook, useBookNavigate } from '../lib/books'
+import { useCurriculum } from '../lib/useCurriculum'
+import Link from '../components/BookLink'
 import OriginalAudioList from '../components/OriginalAudioList'
-import { ORIGINAL_AUDIO } from '../data/originalAudio'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, BookText, ChevronLeft, Pause, Play, Repeat, RotateCcw, Sparkles, Video, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useParams, useSearchParams } from 'react-router-dom'
 import WordAvatar from '../components/WordAvatar'
-import { getUnit, type Unit } from '../data/curriculum'
+import { type Unit } from '../data/curriculum'
 import { usePlayer } from '../lib/player'
 import SpeakButton from '../components/SpeakButton'
 import { speak } from '../lib/speak'
@@ -18,8 +20,12 @@ const TABS: { id: Tab; label: string; icon: typeof Sparkles }[] = [
 ]
 
 export default function UnitDetail() {
+ const { book } = useBook()
+ const { units, originals: ORIGINAL_AUDIO } = useCurriculum()
+ const getUnit = (id: number) => units.find(unit => unit.id === id)
+
   const { unitId } = useParams()
-  const nav = useNavigate()
+  const nav = useBookNavigate()
   const [params, setParams] = useSearchParams()
   const unit = getUnit(Number(unitId))
   const rawTab = params.get('tab') as Tab | null
@@ -69,7 +75,7 @@ export default function UnitDetail() {
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setParams(id === 'words' ? {} : { tab: id }, { replace: true })}
+              onClick={() => setParams(previous => { const next = new URLSearchParams(previous); if (id === 'words') next.delete('tab'); else next.set('tab', id); return next }, { replace: true })}
               className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-extrabold transition-colors ${
                 tab === id ? 'text-white' : 'text-ink/45'
               }`}

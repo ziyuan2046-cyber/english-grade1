@@ -26,3 +26,13 @@ node scripts/publish-build.mjs
 ## 发布与数据
 
 继续使用原有 `/english-grade1/` 地址，历史 hash 路由与二维码仍有效。SW 只轮换本课程缓存，不清除 localStorage、IndexedDB 或其他课程缓存。`_source/` 为可重复构建源码，GitHub Pages 默认不会把下划线目录发布为页面。
+
+
+## 全页面教材分类修复（waiyan3）
+
+- BookProvider 在每次渲染直接解析 URL 的 book 参数，不再在 effect 中滞后复制当前教材。旧版无 book 的详情链接固定解释为一年级上册，不受用户保存的其他年级影响。
+- BookPicker 为全局组件：主页展开按钮，各栏目及详情页提供年级和上下册选择。
+- data/catalog.ts 是逐册数据入口；未开放册次返回空数据，不回退到一年级。未来教材需在这里增加独立数据并更新 BOOKS 的可用状态。
+- 各栏目保留本页标题与对应预留状态。切换册次仍在当前栏目；从单元／视频详情切换回目录，从句子详情切换回课文栏目，从附录详情切换回跟读。
+- BookLink、useBookNavigate 为内部跳转统一附带 book 参数；单元标签修改 URL 时保留 book 与其他查询参数。
+- 书册变化重置页面内搜索、单元和卡片状态并停止音频；浏览器前进后退、刷新以 URL 为准。
