@@ -26,6 +26,7 @@
 </head>
   <body>
     <div id="root"></div>
-  <script defer src="/learning-hub/assets/mobile/install.js?v=20261105" data-app="english" data-sw="/english-grade1/sw.js"></script>
+  
+<script>if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('/english-grade1/sw.js',{updateViaCache:'none'}).then(function(r){r.update().catch(function(){});}).catch(function(){});}</script>
 </body>
 </html>
