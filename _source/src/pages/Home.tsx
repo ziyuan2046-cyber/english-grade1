@@ -8,10 +8,14 @@ export default function Home() {
   const { book } = useBook()
   const { units: UNITS, sections: BOOK_SECTIONS, pages: PAGES, wordCount, originals } = useCurriculum()
   return <div className="px-4 pt-4">
-    <a href="https://ziyuan2046-cyber.github.io/learning-hub/" className="mb-4 inline-flex items-center gap-2 rounded-full bg-white px-4 py-3 text-sm font-bold text-ink/60 shadow-soft"><HomeIcon size={16} /> 返回学习空间</a>
     <header className="relative overflow-hidden rounded-[32px] bg-brand-500 p-6 text-white shadow-pop" style={{ background: 'linear-gradient(135deg,#6366F1,#5B4BE0 65%,#7C5CFF)' }}>
-      <div className="absolute -right-1 -top-3 text-[100px] opacity-15" aria-hidden="true">📖</div>
-      <span className="chip bg-white/20 text-white">外研社 · 新交际英语</span>
+      <div className="pointer-events-none absolute -right-1 -top-3 text-[100px] opacity-15" aria-hidden="true">📖</div>
+      <div className="relative z-10 -my-1 flex items-center justify-between gap-2">
+        <span className="inline-flex min-w-0 items-center rounded-full bg-white/15 px-2.5 py-1 text-[11px] font-bold text-white/90">外研社 · 新交际英语</span>
+        <a href="https://ziyuan2046-cyber.github.io/learning-hub/" aria-label="返回学习空间" title="返回学习空间" className="inline-flex min-h-10 shrink-0 items-center gap-1 rounded-lg px-1.5 text-[11px] font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white">
+          <HomeIcon size={12} aria-hidden="true" /> 学习空间
+        </a>
+      </div>
       <h1 className="mt-3 font-display text-[32px] font-extrabold">外研英语</h1>
       <p className="mt-1 font-bold text-white/90">{book.label}</p>
       <p className="mt-2 text-xs font-semibold text-white/80">按课本目录学习 · 单词 / 课文 / 视频 / 跟读</p>
