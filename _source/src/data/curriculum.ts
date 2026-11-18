@@ -3,6 +3,7 @@
 //           经视频字幕逐帧核对与音频语音识别互相印证整理而来。
 
 export type Word = {
+  form?: string
   en: string
   ipa: string
   zh: string

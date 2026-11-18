@@ -24,10 +24,11 @@ export default function Layout() {
     window.scrollTo({ top: 0 })
     document.title = `外研英语 · ${book.label} | 单词 · 课文 · 视频`
   }, [pathname, book.id])
-  return <div className={`mx-auto min-h-[100dvh] w-full max-w-md ${track ? 'pb-[22rem]' : 'pb-28'}`}>
+  const wide = pathname === '/' || pathname === '/wordbook'
+  return <div className={`mx-auto min-h-[100dvh] w-full ${wide ? 'max-w-[70rem]' : 'max-w-[46rem]'} ${track ? 'pb-[22rem]' : 'pb-28'}`}>
     {pathname !== '/' && <>
-      <div className="flex items-center justify-between gap-2 px-4 pt-4">
-        <Link to={`/?book=${book.id}`} className="inline-flex rounded-full bg-white px-3 py-3 text-xs font-extrabold text-brand-600">← 外研英语</Link>
+      <div className="study-topbar flex items-center justify-between gap-2">
+        <Link to={`/?book=${book.id}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-ink/75">← 外研英语</Link>
         <BookPicker compact />
       </div>
       <div className="px-4"><BookStatusNotice /></div>
@@ -35,7 +36,7 @@ export default function Layout() {
     <div key={book.id} data-book-content={book.id}><Outlet /></div>
     <MiniPlayer />
     <nav aria-label="主导航" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/60 bg-white/95 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch">
+      <div className="mx-auto flex max-w-[46rem] items-stretch">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = activePath === to
           return <Link key={to} to={`${to}?book=${book.id}`} aria-current={active ? 'page' : undefined} className={`flex min-h-[68px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-extrabold ${active ? 'text-brand-600' : 'text-ink/50'}`}>

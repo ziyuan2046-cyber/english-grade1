@@ -101,7 +101,7 @@ export default function UnitDetail() {
         {tab === 'words' && <WordsTab key={unit.id} unit={unit} play={play} currentSrc={track?.src} />}
         {tab === 'texts' && <TextsTab key={unit.id} unit={unit} />}
         {tab === 'videos' && <VideosTab key={unit.id} unit={unit} />}
-        {tab !== 'videos' && <OriginalAudioList title={tab === 'words' ? '原始单词音频（含接上页）' : '原始课文与习题音频'} description="新增资料按原文件收录，不替换上方已有学习内容。" tracks={ORIGINAL_AUDIO.filter(t => t.unitId === unit.id && (tab === 'words' ? t.group === 'words' : t.group === 'text'))} />}
+        {tab !== 'videos' && <OriginalAudioList title={tab === 'words' ? '原始单词音频' : '原始课文与习题音频'} tracks={ORIGINAL_AUDIO.filter(t => t.unitId === unit.id && (tab === 'words' ? t.group === 'words' : t.group === 'text'))} />}
       </main>
     </div>
   )
@@ -137,7 +137,7 @@ function WordsTab({
         <div className="min-w-0 flex-1">
           <div className="font-display text-lg font-extrabold">{partial ? '词汇辅助合成发音' : '整单元单词跟读'}</div>
           <div className="text-xs font-bold text-ink/45">
-            {isPlayingUnit ? (playing ? '正在播放…' : '已暂停 · 轻点继续') : `${unit.words.length} 个单词 · 点单词可单独发音`}
+            {isPlayingUnit ? (playing ? '正在播放…' : '已暂停') : partial ? `${unit.words.length} 个单词` : '随书录音'}
           </div>
         </div>
         <button
@@ -152,7 +152,7 @@ function WordsTab({
       {flash ? (
         <Flashcards unit={unit} />
       ) : (
-        <div className="grid gap-2">
+        <div className="grid gap-2 sm:grid-cols-2">
           {unit.words.map((w, i) => (
             <motion.div
               key={w.en}
@@ -165,7 +165,7 @@ function WordsTab({
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-baseline gap-x-2">
                   <span className="font-display text-[23px] font-extrabold leading-tight">{w.en}</span>
-                  <span className="text-xs font-semibold text-ink/40">{w.ipa}</span>
+                  <span className="text-xs font-semibold text-ink/55">{[w.ipa, w.form].filter(Boolean).join(' · ')}</span>
                 </div>
                 <div className="mt-0.5 text-[15px] font-bold text-ink/55">{w.zh}</div>
               </div>
@@ -211,25 +211,25 @@ function Flashcards({ unit }: { unit: Unit }) {
             {/* 点上半部分翻面 */}
             <button
               onClick={() => setFlipped((v) => !v)}
+              aria-label={flipped ? '收起中文释义' : '查看中文释义'}
               className="flex h-full w-full flex-col items-center justify-start px-6 pt-7 text-center"
             >
               <span className="text-sm font-extrabold" style={{ color: unit.color }}>
                 {unit.code} · 第 {i + 1}/{unit.words.length}
               </span>
               <span className="animate-floaty mt-3 text-[68px] leading-none">
-                {w.emoji ?? <span style={{ color: unit.color }}>{w.en.charAt(0).toUpperCase()}</span>}
+                {w.emoji || <span style={{ color: unit.color }}>{w.en.charAt(0).toUpperCase()}</span>}
               </span>
-              <span className="mt-4 font-display text-[46px] font-extrabold leading-none">{w.en}</span>
-              <span className="mt-2.5 text-base font-semibold text-ink/40">{w.ipa}</span>
+              <span className="study-word mt-4">{w.en}</span>
+              <span className="mt-2.5 text-base font-semibold text-ink/55">{[w.ipa, w.form].filter(Boolean).join(' · ')}</span>
               {flipped ? (
                 <span
-                  className="animate-popin mt-4 rounded-full px-6 py-2 font-display text-2xl font-extrabold"
-                  style={{ background: unit.tint, color: unit.color }}
+                  className="animate-popin mt-4 font-display text-2xl font-extrabold text-black"
                 >
                   {w.zh}
                 </span>
               ) : (
-                <span className="mt-4 text-sm font-bold text-ink/25">轻点查看中文</span>
+                <RotateCcw className="mt-4 text-ink/50" size={18} aria-hidden="true" />
               )}
             </button>
 
@@ -259,6 +259,7 @@ function Flashcards({ unit }: { unit: Unit }) {
         </button>
         <button
           onClick={() => setFlipped(false)}
+          aria-label="恢复卡片正面"
           className="grid h-12 w-12 place-items-center rounded-full bg-white text-ink/50 shadow-soft active:scale-90"
         >
           <RotateCcw size={18} />
@@ -271,7 +272,6 @@ function Flashcards({ unit }: { unit: Unit }) {
           下一个 <ArrowRight size={18} />
         </button>
       </div>
-      <p className="mt-3 text-center text-xs font-bold text-ink/30">左右滑动切换卡片</p>
     </div>
   )
 }
