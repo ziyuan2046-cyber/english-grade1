@@ -1,5 +1,5 @@
 import BookStatusNotice from './BookStatusNotice'
-import { BookA, BookText, Home, Headphones } from 'lucide-react'
+import { ArrowLeft, BookA, BookText, Home, Headphones } from 'lucide-react'
 import { Outlet, Link, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useBook } from '../lib/books'
@@ -28,19 +28,19 @@ export default function Layout() {
   return <div className={`mx-auto min-h-[100dvh] w-full ${wide ? 'max-w-[70rem]' : 'max-w-[46rem]'} ${track ? 'pb-[22rem]' : 'pb-28'}`}>
     {pathname !== '/' && <>
       <div className="study-topbar flex items-center justify-between gap-2">
-        <Link to={`/?book=${book.id}`} className="inline-flex min-h-11 items-center gap-1 text-sm font-bold text-ink/75">← 外研英语</Link>
+        <Link to={`/?book=${book.id}`} className="study-secondary"><ArrowLeft size={18} aria-hidden="true" /> 外研英语</Link>
         <BookPicker compact />
       </div>
       <div className="px-4"><BookStatusNotice /></div>
     </>}
     <div key={book.id} data-book-content={book.id}><Outlet /></div>
     <MiniPlayer />
-    <nav aria-label="主导航" className="fixed inset-x-0 bottom-0 z-50 border-t border-white/60 bg-white/95 backdrop-blur-xl">
+    <nav aria-label="主导航" className="study-nav fixed inset-x-0 bottom-0 z-50">
       <div className="mx-auto flex max-w-[46rem] items-stretch">
         {NAV.map(({ to, label, icon: Icon }) => {
           const active = activePath === to
-          return <Link key={to} to={`${to}?book=${book.id}`} aria-current={active ? 'page' : undefined} className={`flex min-h-[68px] flex-1 flex-col items-center justify-center gap-1 py-2 text-[11px] font-extrabold ${active ? 'text-brand-600' : 'text-ink/50'}`}>
-            <span className={`grid h-8 w-12 place-items-center rounded-full ${active ? 'bg-brand-50' : ''}`}><Icon size={21} /></span>{label}
+          return <Link key={to} to={`${to}?book=${book.id}`} aria-current={active ? 'page' : undefined} className="study-nav-link">
+            <span><Icon size={22} aria-hidden="true" /></span>{label}
           </Link>
         })}
       </div>

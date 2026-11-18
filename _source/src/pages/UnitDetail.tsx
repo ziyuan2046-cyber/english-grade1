@@ -1,10 +1,9 @@
 import PendingLesson from '../components/PendingLesson'
-import { useBook, useBookNavigate } from '../lib/books'
 import { useCurriculum } from '../lib/useCurriculum'
 import Link from '../components/BookLink'
 import OriginalAudioList from '../components/OriginalAudioList'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, BookText, ChevronLeft, Pause, Play, Repeat, RotateCcw, Sparkles, Video, Volume2 } from 'lucide-react'
+import { ArrowRight, BookText, ChevronLeft, Pause, Play, Repeat, RotateCcw, Sparkles, Video, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import WordAvatar from '../components/WordAvatar'
@@ -21,12 +20,10 @@ const TABS: { id: Tab; label: string; icon: typeof Sparkles }[] = [
 ]
 
 export default function UnitDetail() {
- const { book } = useBook()
  const { units, originals: ORIGINAL_AUDIO } = useCurriculum()
  const getUnit = (id: number) => units.find(unit => unit.id === id)
 
   const { unitId } = useParams()
-  const nav = useBookNavigate()
   const [params, setParams] = useSearchParams()
   const unit = getUnit(Number(unitId))
   const rawTab = params.get('tab') as Tab | null
@@ -52,40 +49,32 @@ export default function UnitDetail() {
   return (
     <div className="pb-4">
       {/* 头部 */}
-      <header
-        className="relative overflow-hidden rounded-b-[34px] px-5 pb-6 pt-6 text-white"
-        style={{ background: `linear-gradient(150deg, ${unit.color}, #171A2B)` }}
-      >
-        <div className="absolute -right-4 top-2 select-none text-[100px] opacity-25">{unit.emoji}</div>
-        <div className="relative">
-          <button
-            onClick={() => nav('/')}
-            className="mb-4 inline-flex items-center gap-1 rounded-full bg-white/20 px-3 py-1.5 text-xs font-bold backdrop-blur active:bg-white/30"
-          >
-            <ArrowLeft size={14} /> 返回目录
-          </button>
-          <div className="text-xs font-bold uppercase tracking-wider text-white/80">{unit.code}</div>
+      <header className="study-unit-heading" style={{ background: unit.tint }}>
+        <span className="home-extra-icon" aria-hidden="true">{unit.emoji}</span>
+        <div className="min-w-0 break-words">
+          <div className="text-xs font-bold text-ink/65">{unit.code}</div>
           <h1 className="font-display text-[28px] font-extrabold leading-tight">{unit.title}</h1>
-          <p className="text-sm font-bold text-white/85">{unit.titleZh}</p>
+          <p className="text-sm font-bold text-ink/75">{unit.titleZh}</p>
         </div>
       </header>
 
       {/* 标签 */}
-      <div className="sticky top-0 z-30 -mt-3 px-4">
+      <div className="sticky top-0 z-30 px-4">
         <div className="flex gap-1 rounded-2xl border border-white/70 bg-white/90 p-1 shadow-soft backdrop-blur">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
+              type="button"
+              aria-pressed={tab === id}
               onClick={() => setParams(previous => { const next = new URLSearchParams(previous); if (id === 'words') next.delete('tab'); else next.set('tab', id); return next }, { replace: true })}
-              className={`relative flex flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-extrabold transition-colors ${
+              className={`relative flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl py-2.5 text-sm font-extrabold transition-colors ${
                 tab === id ? 'text-white' : 'text-ink/45'
               }`}
             >
               {tab === id && (
                 <motion.span
                   layoutId="tabpill"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ background: unit.color }}
+                  className="absolute inset-0 rounded-xl bg-brand-600"
                   transition={{ type: 'spring', stiffness: 420, damping: 34 }}
                 />
               )}

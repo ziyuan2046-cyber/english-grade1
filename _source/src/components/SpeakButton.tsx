@@ -13,7 +13,7 @@ type Props = {
 }
 
 /** 统一发音按钮：点击区域大、按下有反馈、播放中显示动效 */
-export default function SpeakButton({ text, color = '#6366F1', tint, size = 'md', className = '', label }: Props) {
+export default function SpeakButton({ text, color = '#247E65', tint, size = 'md', className = '', label }: Props) {
   const [active, setActive] = useState(false)
   const [loading, setLoading] = useState(false)
 
@@ -38,7 +38,7 @@ export default function SpeakButton({ text, color = '#6366F1', tint, size = 'md'
       aria-label={label ?? `播放 ${text}`}
       aria-busy={loading || undefined}
       className={`relative grid shrink-0 place-items-center rounded-full transition-transform duration-100 active:scale-90 ${box} ${className}`}
-      style={{ background: tint ?? '#EEF1FF', color }}
+      style={{ background: tint ?? '#E9F8F1', color }}
     >
       {active && (
         <span

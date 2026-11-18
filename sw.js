@@ -1,5 +1,5 @@
 'use strict';
-const VERSION="20261118-waiyan8",CACHE="study-english-20261118-waiyan8",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
+const VERSION="20261118-waiyan9",CACHE="study-english-20261118-waiyan9",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
 const PRONUNCIATIONS='study-english-pronunciations-v1', MAX_PRONUNCIATIONS=120, pendingAudio=new Map();
 async function loadPronunciation(url) {
  const cache=await caches.open(PRONUNCIATIONS).catch(()=>null);

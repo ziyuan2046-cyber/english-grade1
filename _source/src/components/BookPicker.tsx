@@ -50,7 +50,7 @@ export default function BookPicker({ compact = false }: { compact?: boolean }) {
       {!compact && <span className="text-[11px] font-bold text-ink/45">{status(book)}</span>}
       <ChevronDown size={15} aria-hidden="true" className="shrink-0 text-ink/45" />
     </button>
-    <dialog ref={dialogRef} id={`${id}-dialog`} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`} className="book-switch-dialog" onCancel={() => setOpen(false)} onClose={() => { if (!dialogRef.current?.open) setOpen(false) }} onKeyDown={event => {
+    <dialog ref={dialogRef} id={`${id}-dialog`} aria-labelledby={`${id}-title`} className="book-switch-dialog" onCancel={() => setOpen(false)} onClose={() => { if (!dialogRef.current?.open) setOpen(false) }} onKeyDown={event => {
       if (event.key !== 'Tab') return
       const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('button:not([disabled])'))
       const first = buttons[0], last = buttons[buttons.length - 1]
@@ -61,7 +61,7 @@ export default function BookPicker({ compact = false }: { compact?: boolean }) {
       <div className="book-switch-panel">
         <div className="book-switch-grip" aria-hidden="true" />
         <header className="flex items-start justify-between gap-3">
-          <div><h2 id={`${id}-title`} className="text-xl font-extrabold text-ink">切换教材</h2><p id={`${id}-description`} className="mt-1.5 text-xs font-semibold text-ink/50">选择年级和学期，确认后留在当前学习栏目</p></div>
+          <h2 id={`${id}-title`} className="text-xl font-extrabold text-ink">切换教材</h2>
           <button type="button" onClick={close} aria-label="关闭教材选择" className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-ink/[.04] text-ink/50"><X size={19} /></button>
         </header>
         <fieldset className="mt-6"><legend className="mb-3 text-xs font-extrabold text-ink/55">年级</legend>
@@ -73,7 +73,6 @@ export default function BookPicker({ compact = false }: { compact?: boolean }) {
             return <button type="button" key={value} aria-pressed={term === value} onClick={() => setTerm(value)} className={`book-choice book-term-choice ${term === value ? 'is-selected' : ''}`}><span>{value === 'up' ? '上册' : '下册'}</span><span className="text-[10px] font-semibold opacity-60">{status(item)}</span></button>
           })}</div>
         </fieldset>
-        <p className="mt-4 min-h-6 text-xs font-semibold leading-6 text-ink/50" aria-live="polite">{draft.partial ? '本册提供参考词汇与合成发音，原文原声仍待补充。' : draft.available ? '本册已有课程内容，可以开始学习。' : '本册资料待更新，切换后会显示预留页面。'}</p>
         <button type="button" onClick={apply} className="mt-4 min-h-12 w-full rounded-2xl bg-brand-500 px-4 py-3.5 text-sm font-extrabold text-white transition-colors hover:bg-brand-600">{draft.id === book.id ? '完成' : `切换到${draft.label}`}</button>
       </div>
     </dialog>
