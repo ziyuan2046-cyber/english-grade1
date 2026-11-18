@@ -1,13 +1,13 @@
 import BookStatusNotice from '../components/BookStatusNotice'
 import Link from '../components/BookLink'
-import { ArrowRight, BookOpen, Headphones, CornerUpLeft } from 'lucide-react'
+import { ArrowRight, Headphones, CornerUpLeft } from 'lucide-react'
 import { useCurriculum } from '../lib/useCurriculum'
 import BookPicker from '../components/BookPicker'
 import { BookPlaceholder, useBook } from '../lib/books'
 
 export default function Home() {
   const { book } = useBook()
-  const { units: UNITS, sections: BOOK_SECTIONS, pages: PAGES, wordCount, originals, partial, intro } = useCurriculum()
+  const { units: UNITS, sections: BOOK_SECTIONS, pages: PAGES, originals, partial, intro } = useCurriculum()
   return <main className="study-home">
     <header className="home-heading">
       <div><span className="home-edition">外研社 · 新交际英语</span><h1>外研英语</h1></div>
@@ -20,7 +20,6 @@ export default function Home() {
     </header>
     <BookStatusNotice />
     {!book.available ? <BookPlaceholder /> : <>
-      <div className="mb-4 flex gap-3"><Link to="/unit/1" className="btn-3d flex flex-1 items-center justify-center gap-2 bg-brand-500 py-3 text-sm text-white"><BookOpen size={17} /> {partial ? '学习参考词汇' : '开始学习'}</Link><Link to="/wordbook" className="btn-3d flex flex-1 items-center justify-center gap-2 bg-white py-3 text-sm text-brand-600">单词本 · {wordCount} 词</Link></div>
       <h2 className="mb-3 text-lg font-extrabold">{partial ? '参考目录' : '课本目录'}</h2>
       <ol className="study-contents" aria-label="课本目录">
         {intro.map(s => <li key={s.id}><Link to={`/book-section/${s.id}`} className="card flex items-center gap-3 p-4" data-contents-title={s.title}><span className="text-2xl">{s.emoji}</span><div><h3 className="font-display text-xl font-extrabold">{s.title}</h3><p className="text-xs text-ink/50">{s.zh} · 原文原声待补充</p></div></Link></li>)}

@@ -1,9 +1,11 @@
-import { useRef, useState, type PointerEvent } from 'react'
-import { ArrowLeft, ArrowRight, Layers, List, RotateCcw, Search, X } from 'lucide-react'
+import { useEffect, useRef, useState, type PointerEvent } from 'react'
+import { ArrowLeft, ArrowRight, Layers, List, Maximize2, Minimize2, RotateCcw, Search, X } from 'lucide-react'
 import SpeakButton from '../components/SpeakButton'
 import WordAvatar from '../components/WordAvatar'
 import { BookPlaceholder, useBook } from '../lib/books'
 import { useCurriculum } from '../lib/useCurriculum'
+import { prefetchPronunciations } from '../lib/speak'
+import { wordPicture } from '../data/wordPictures'
 
 const normalize = (value: string) => value.trim().toLowerCase().replaceAll('’', "'")
 
@@ -15,6 +17,9 @@ export default function Wordbook() {
   const [view, setView] = useState<'cards' | 'list'>('cards')
   const [index, setIndex] = useState(0)
   const [flipped, setFlipped] = useState(false)
+  const [expanded, setExpanded] = useState(false)
+  const dialog = useRef<HTMLDialogElement>(null)
+  const expandButton = useRef<HTMLButtonElement>(null)
   const pointer = useRef<{ x: number; y: number } | null>(null)
   const ignoreClick = useRef(false)
 
@@ -29,6 +34,24 @@ export default function Wordbook() {
     .filter(group => group.words.length)
   const entries = filtered.flatMap(group => group.words.map(word => ({ word, group })))
   const entry = entries[index]
+  const currentWord = entry?.word.en
+  const nextWord = entries[index + 1]?.word.en
+  const closeExpanded = () => { dialog.current?.close(); setExpanded(false) }
+  useEffect(() => {
+    if (view === 'cards' && currentWord) return prefetchPronunciations(currentWord, nextWord)
+  }, [view, currentWord, nextWord])
+  useEffect(() => {
+    if (!expanded || !dialog.current) return
+    const element = dialog.current
+    const overflow = document.body.style.overflow
+    element.showModal()
+    document.body.style.overflow = 'hidden'
+    return () => {
+      element.close()
+      document.body.style.overflow = overflow
+      expandButton.current?.focus({ preventScroll: true })
+    }
+  }, [expanded])
   const reset = () => { setIndex(0); setFlipped(false) }
   const step = (delta: number) => {
     setIndex(current => Math.max(0, Math.min(entries.length - 1, current + delta)))
@@ -42,6 +65,37 @@ export default function Wordbook() {
     if (Math.abs(x) < 45 || Math.abs(x) < 1.4 * Math.abs(y)) return
     ignoreClick.current = true
     step(x < 0 ? 1 : -1)
+  }
+  const flashcard = (full = false) => {
+    if (!entry) return null
+    const picture = wordPicture(entry.word.en, entry.word.emoji)
+    return <section className="word-deck" aria-label="单词卡片" onKeyDown={event => {
+      if (event.altKey || event.ctrlKey || event.metaKey) return
+      if (event.key === 'ArrowLeft' && index > 0) { event.preventDefault(); step(-1) }
+      if (event.key === 'ArrowRight' && index < entries.length - 1) { event.preventDefault(); step(1) }
+    }}>
+      <div className="word-progress">
+        <span>{entry.group.title}</span>
+        <span className="word-deck-tools"><span aria-live="polite">{index + 1} / {entries.length}</span>
+          {full ? <button type="button" aria-label="退出全屏" title="退出全屏" className="word-icon-button" onClick={closeExpanded}><Minimize2 size={18} /></button>
+            : <button type="button" ref={expandButton} aria-haspopup="dialog" aria-label="全屏单词卡片" title="全屏单词卡片" className="word-icon-button" onClick={() => setExpanded(true)}><Maximize2 size={18} /></button>}
+        </span>
+      </div>
+      <button type="button" className="word-flashcard" aria-label={flipped ? '翻回单词正面' : '翻看中文释义'}
+        onPointerDown={event => { ignoreClick.current = false; pointer.current = event.pointerType === 'touch' ? { x: event.clientX, y: event.clientY } : null }}
+        onPointerUp={swipe} onPointerCancel={() => { pointer.current = null }}
+        onClick={event => { if (event.detail > 0 && ignoreClick.current) { ignoreClick.current = false; return }; setFlipped(value => !value) }}>
+        <RotateCcw className="word-flip-icon" size={18} aria-hidden="true" />
+        {picture && <span className="word-emoji" aria-hidden="true">{picture}</span>}
+        <span className={flipped ? 'study-word study-word-translation' : 'study-word'}>{flipped ? entry.word.zh : entry.word.en}</span>
+        <span className="word-pronunciation">{flipped ? entry.word.en : [entry.word.ipa, entry.word.form].filter(Boolean).join(' · ')}</span>
+      </button>
+      <div className="word-card-actions">
+        <button type="button" disabled={index === 0} onClick={() => step(-1)} aria-label="上一个单词" title="上一个单词"><ArrowLeft size={20} /> 上一个</button>
+        <SpeakButton key={entry.word.en} text={entry.word.en} size="lg" />
+        <button type="button" disabled={index === entries.length - 1} onClick={() => step(1)} aria-label="下一个单词" title="下一个单词">下一个 <ArrowRight size={20} /></button>
+      </div>
+    </section>
   }
 
   return <main className="wordbook-view">
@@ -74,34 +128,19 @@ export default function Wordbook() {
           </div>
         </div>
         {!entry ? <div className="word-empty" role="status"><p>没有找到匹配的词汇</p><button type="button" onClick={() => { setQuery(''); reset() }}><X size={16} />清除搜索</button></div>
-          : view === 'cards' ? <section aria-label="单词卡片" onKeyDown={event => {
-            if (event.altKey || event.ctrlKey || event.metaKey) return
-            if (event.key === 'ArrowLeft' && index > 0) { event.preventDefault(); step(-1) }
-            if (event.key === 'ArrowRight' && index < entries.length - 1) { event.preventDefault(); step(1) }
-          }}>
-            <div className="word-progress"><span>{entry.group.title}</span><span aria-live="polite">{index + 1} / {entries.length}</span></div>
-            <button type="button" className="word-flashcard" aria-label={flipped ? '翻回单词正面' : '翻看中文释义'}
-              onPointerDown={event => { ignoreClick.current = false; pointer.current = event.pointerType === 'touch' ? { x: event.clientX, y: event.clientY } : null }}
-              onPointerUp={swipe} onPointerCancel={() => { pointer.current = null }}
-              onClick={event => { if (event.detail > 0 && ignoreClick.current) { ignoreClick.current = false; return }; setFlipped(value => !value) }}>
-              <RotateCcw className="word-flip-icon" size={18} aria-hidden="true" />
-              {entry.word.emoji && <span className="word-emoji" aria-hidden="true">{entry.word.emoji}</span>}
-              <span className={flipped ? 'study-word study-word-translation' : 'study-word'}>{flipped ? entry.word.zh : entry.word.en}</span>
-              <span className="word-pronunciation">{flipped ? entry.word.en : [entry.word.ipa, entry.word.form].filter(Boolean).join(' · ')}</span>
-            </button>
-            <div className="word-card-actions">
-              <button type="button" disabled={index === 0} onClick={() => step(-1)} aria-label="上一个单词" title="上一个单词"><ArrowLeft size={20} /> 上一个</button>
-              <SpeakButton key={entry.word.en} text={entry.word.en} size="lg" />
-              <button type="button" disabled={index === entries.length - 1} onClick={() => step(1)} aria-label="下一个单词" title="下一个单词">下一个 <ArrowRight size={20} /></button>
-            </div>
-          </section> : <div className="word-list">{filtered.map(group => <section key={group.id}>
+          : view === 'cards' ? <>
+            {flashcard()}
+            <dialog ref={dialog} className="word-fullscreen" aria-label="全屏单词卡片" onCancel={event => { event.preventDefault(); closeExpanded() }}>
+              {expanded && flashcard(true)}
+            </dialog>
+          </> : <div className="word-list">{filtered.map(group => <section key={group.id}>
             <h2>{group.title} <span>{group.words.length} 词</span></h2>
             <ul>{group.words.map(word => <li key={word.en}>
               <button type="button" className="word-list-entry" onClick={() => {
                 setIndex(entries.findIndex(item => item.word === word && item.group.id === group.id)); setFlipped(false); setView('cards')
               }}>
                 <WordAvatar emoji={word.emoji} text={word.en} color={group.color} size={44} />
-                <span className="min-w-0"><strong>{word.en}</strong><span>{[word.ipa, word.form, word.zh].filter(Boolean).join(' · ')}</span></span>
+                <span className="word-list-copy"><strong>{word.en}</strong>{(word.ipa || word.form) && <span className="word-list-ipa">{[word.ipa, word.form].filter(Boolean).join(' · ')}</span>}<span className="word-list-meaning">{word.zh}</span></span>
               </button>
               <SpeakButton text={word.en} color={group.color} tint={group.tint} />
             </li>)}</ul>

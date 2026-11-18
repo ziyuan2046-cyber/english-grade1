@@ -1,4 +1,4 @@
-import { Volume2 } from 'lucide-react'
+import { LoaderCircle, Volume2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { speak, subscribe } from '../lib/speak'
 
@@ -15,9 +15,13 @@ type Props = {
 /** 统一发音按钮：点击区域大、按下有反馈、播放中显示动效 */
 export default function SpeakButton({ text, color = '#6366F1', tint, size = 'md', className = '', label }: Props) {
   const [active, setActive] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    return subscribe((s) => setActive(s.text === text.trim() && s.playing))
+    return subscribe((s) => {
+      setActive(s.text === text.trim() && s.playing)
+      setLoading(s.text === text.trim() && s.loading)
+    })
   }, [text])
 
   const box = size === 'lg' ? 'h-14 w-14' : 'h-12 w-12'
@@ -32,6 +36,7 @@ export default function SpeakButton({ text, color = '#6366F1', tint, size = 'md'
         speak(text)
       }}
       aria-label={label ?? `播放 ${text}`}
+      aria-busy={loading || undefined}
       className={`relative grid shrink-0 place-items-center rounded-full transition-transform duration-100 active:scale-90 ${box} ${className}`}
       style={{ background: tint ?? '#EEF1FF', color }}
     >
@@ -41,7 +46,7 @@ export default function SpeakButton({ text, color = '#6366F1', tint, size = 'md'
           style={{ background: color, opacity: 0.22 }}
         />
       )}
-      <Volume2 size={icon} className="relative" strokeWidth={2.4} />
+      {loading ? <LoaderCircle size={icon} className="relative animate-spin" aria-hidden="true" /> : <Volume2 size={icon} className="relative" strokeWidth={2.4} aria-hidden="true" />}
     </button>
   )
 }

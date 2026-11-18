@@ -1,5 +1,39 @@
 'use strict';
-const VERSION="20261118-waiyan7",CACHE="study-english-20261118-waiyan7",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
+const VERSION="20261118-waiyan8",CACHE="study-english-20261118-waiyan8",OWN=["english-mobile-", "study-english-"],SHELL=["./", "./index.html", "./manifest.webmanifest"];
+const PRONUNCIATIONS='study-english-pronunciations-v1', MAX_PRONUNCIATIONS=120, pendingAudio=new Map();
+async function loadPronunciation(url) {
+ const cache=await caches.open(PRONUNCIATIONS).catch(()=>null);
+ const cached=await cache?.match(url).catch(()=>null);
+ if(cached)return cached;
+ if(!pendingAudio.has(url)){
+  const request=(async()=>{
+   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),12000);
+   try{
+    const response=await fetch(url,{signal:controller.signal});
+    if(!cache||response.status!==200||!/^audio\//i.test(response.headers.get('content-type')||''))return response;
+    try{
+     await cache.put(url,response.clone());
+     const keys=await cache.keys();
+     await Promise.all(keys.slice(0,Math.max(0,keys.length-MAX_PRONUNCIATIONS)).map(key=>cache.delete(key)));
+    }catch{/* a storage failure must not block playback */}
+    return response;
+   }finally{clearTimeout(timer);}
+  })().finally(()=>pendingAudio.delete(url));
+  pendingAudio.set(url,request);
+ }
+ return (await pendingAudio.get(url)).clone();
+}
+async function pronunciation(request){
+ const response=await loadPronunciation(request.url), range=request.headers.get('range');
+ if(!range||response.status!==200)return response;
+ const match=/^bytes=(\d*)-(\d*)$/i.exec(range);
+ if(!match||(!match[1]&&!match[2]))return response;
+ const body=await response.arrayBuffer(), size=body.byteLength;
+ const start=match[1]?Number(match[1]):Math.max(0,size-Number(match[2]));
+ const end=match[1]&&match[2]?Math.min(size-1,Number(match[2])):size-1;
+ if(start>=size||end<start)return new Response(null,{status:416,headers:{'Content-Range':`bytes */${size}`}});
+ return new Response(body.slice(start,end+1),{status:206,headers:{'Content-Type':response.headers.get('content-type')||'audio/mpeg','Content-Length':String(end-start+1),'Content-Range':`bytes ${start}-${end}/${size}`,'Accept-Ranges':'bytes'}});
+}
 function canonical(url){const u=new URL(url);if(u.pathname.endsWith('/'))u.pathname+='index.html';u.search='';u.hash='';return u.href;}
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE);
@@ -7,11 +41,15 @@ self.addEventListener('install',event=>event.waitUntil((async()=>{
  await self.skipWaiting();
 })()));
 self.addEventListener('activate',event=>event.waitUntil((async()=>{
- const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE&&OWN.some(p=>k.startsWith(p))).map(k=>caches.delete(k)));await self.clients.claim();
+ const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE&&k!==PRONUNCIATIONS&&OWN.some(p=>k.startsWith(p))).map(k=>caches.delete(k)));await self.clients.claim();
 })()));
 self.addEventListener('fetch',event=>{
  const req=event.request,u=new URL(req.url),scope=new URL(self.registration.scope);
- if(req.method!=='GET'||u.origin!==self.location.origin||!u.pathname.startsWith(scope.pathname)||req.headers.has('range')||/\.(?:mp3|mp4|m4a|ogg|wav|aac)$/i.test(u.pathname))return;
+ if(req.method!=='GET'||u.origin!==self.location.origin||!u.pathname.startsWith(scope.pathname))return;
+ if(u.pathname.startsWith(`${scope.pathname}audio/tts/`)&&u.pathname.endsWith('.mp3')){
+  event.respondWith(pronunciation(req).catch(()=>new Response(null,{status:503})));return;
+ }
+ if(req.headers.has('range')||/\.(?:mp3|mp4|m4a|ogg|wav|aac)$/i.test(u.pathname))return;
  
  const nav=req.mode==='navigate',fresh=nav||/\.(?:html|webmanifest|json)$/.test(u.pathname),key=fresh?canonical(u.href):req;
  const work=(async()=>{

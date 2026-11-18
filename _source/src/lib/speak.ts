@@ -1,7 +1,7 @@
 /**
  * 单词 / 句子的发音。
  * 优先播放随包发布的真实发音 MP3（public/audio/tts），
- * 找不到时自动回退到浏览器语音合成，保证任何情况下都有声音。
+ * 文件不可用时尝试浏览器语音合成。
  *
  * 文件名的生成规则必须与 _tools/gen_tts.py 中的 slug_name() 完全一致。
  */
@@ -28,15 +28,16 @@ export const ttsPath = (text: string) => {
 
 /* ---------------- 播放状态 ---------------- */
 
-type Listener = (s: { text: string | null; playing: boolean }) => void
+type Listener = (s: { text: string | null; playing: boolean; loading: boolean }) => void
 
 let current: HTMLAudioElement | null = null
 let currentText: string | null = null
+let loading = false
 let listeners: Listener[] = []
 let speechWarmed = false
 
 const emit = () => {
-  const s = { text: currentText, playing: !!current && !current.paused && !current.ended }
+  const s = { text: currentText, loading, playing: !!current && !loading && !current.paused && !current.ended }
   listeners.forEach((l) => l(s))
 }
 
@@ -50,11 +51,31 @@ export const subscribe = (l: Listener) => {
 export const stopSpeaking = () => {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) window.speechSynthesis.cancel()
   if (current) {
-    current.pause()
+    const audio = current
     current = null
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
   }
   currentText = null
+  loading = false
   emit()
+}
+
+/** Only warm nearby cards; avoid speculative traffic on restricted connections. */
+export function prefetchPronunciations(...words: (string | undefined)[]) {
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection
+  if (!navigator.onLine || connection?.saveData || connection?.effectiveType?.includes('2g')) return
+  const controller = new AbortController()
+  const timer = window.setTimeout(async () => {
+    for (const word of words) {
+      if (!word || controller.signal.aborted) continue
+      const src = ttsPath(word)
+      if (!src) continue
+      try { await (await fetch(src, { signal: controller.signal })).arrayBuffer() } catch { /* playback can retry */ }
+    }
+  }, 120)
+  return () => { window.clearTimeout(timer); controller.abort() }
 }
 
 /* ---------------- 语音合成兜底 ---------------- */
@@ -103,22 +124,25 @@ export function speak(text: string) {
   audio.preload = 'auto'
   current = audio
   currentText = clean
+  loading = true
 
   const fallback = () => {
     // 真实音频缺失（例如旧缓存）时退回到语音合成
     if (current !== audio) return
     current = null
+    loading = false
     currentText = clean
     if (!speakFallback(clean)) currentText = null
     emit()
   }
 
-  audio.addEventListener('playing', emit)
-  audio.addEventListener('pause', emit)
+  audio.addEventListener('playing', () => { if (current === audio) { loading = false; emit() } })
+  audio.addEventListener('waiting', () => { if (current === audio) { loading = true; emit() } })
   audio.addEventListener('ended', () => {
     if (current === audio) {
       current = null
       currentText = null
+      loading = false
     }
     emit()
   })
