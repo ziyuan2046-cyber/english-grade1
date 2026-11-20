@@ -10,12 +10,16 @@ export default function Home() {
   const { units, sections, pages, originals, partial, intro } = useCurriculum()
 
   return <main className="study-home">
-    <header className="home-heading kids-home-heading">
-      <div className="kids-home-top">
-        <div className="home-edition"><BookOpen size={17} aria-hidden="true" /> 外研社 · 新交际英语</div>
-        <a href="https://ziyuan2046-cyber.github.io/learning-hub/" className="study-secondary home-return"><CornerUpLeft size={17} aria-hidden="true" /> 返回学习空间</a>
+    <header className="home-heading">
+      <a href="https://ziyuan2046-cyber.github.io/learning-hub/" className="study-back home-return"><CornerUpLeft size={16} aria-hidden="true" /> 返回学习空间</a>
+      <div className="kids-home-title">
+        <div className="home-heading-copy">
+          <span className="home-edition"><BookOpen size={16} aria-hidden="true" /> 外研社 · 新交际英语</span>
+          <h1>外研英语</h1>
+          {book.available && <p className="home-course-meta">{book.label} · {units.length} 个单元</p>}
+        </div>
+        <BookPicker compact />
       </div>
-      <div className="kids-home-title"><h1>外研英语</h1><BookPicker compact /></div>
     </header>
     <BookStatusNotice />
     {!book.available ? <BookPlaceholder /> : <>
@@ -23,17 +27,16 @@ export default function Home() {
       <ol className="study-contents" aria-label="课本目录">
         {intro.map(item => <li key={item.id}>
           <BookLink to={`/book-section/${item.id}`} className="lesson-tile" data-tone="mint" data-contents-title={item.title}>
-            <span className="lesson-top"><span className="lesson-number">课前</span><ArrowRight size={18} aria-hidden="true" /></span>
-            <span className="lesson-picture" aria-hidden="true">{item.emoji}</span>
+            <span className="lesson-top"><span className="lesson-picture" aria-hidden="true">{item.emoji}</span><span className="lesson-number">课前</span></span>
             <span className="lesson-title">{item.title}</span><span className="lesson-caption">{item.zh}</span>
           </BookLink>
         </li>)}
         {units.map((unit, index) => <li key={unit.id}>
           <BookLink to={`/unit/${unit.id}`} className="lesson-tile" data-tone={['mint', 'sky', 'peach', 'yellow', 'iris', 'pink'][index % 6]} data-contents-title={unit.title}>
-            <span className="lesson-top"><span className="lesson-number">{unit.code}</span><ArrowRight size={18} aria-hidden="true" /></span>
-            <span className="lesson-picture" aria-hidden="true">{unit.emoji}</span>
+            <span className="lesson-top"><span className="lesson-picture" aria-hidden="true">{unit.emoji}</span><span className="lesson-number">{unit.code}</span></span>
             <span className="lesson-title">{unit.title}</span>
             <span className="lesson-caption">{unit.titleZh}{pages[index] ? ` · 第 ${pages[index]} 页` : ''}</span>
+            <span className="lesson-card-footer"><span>{unit.words.length} 词</span><ArrowRight size={16} aria-hidden="true" /></span>
           </BookLink>
         </li>)}
       </ol>

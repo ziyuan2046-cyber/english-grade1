@@ -42,13 +42,13 @@ export default function BookPicker({ compact = false }: { compact?: boolean }) {
       onClick={launch}
       className={compact ? 'book-switch-trigger' : 'book-switch-trigger book-switch-trigger-home'}
     >
-      {!compact && <BookOpen size={18} aria-hidden="true" className="shrink-0 text-brand-500" />}
-      <span className={compact ? '' : 'flex-1 text-left'}>
-        {!compact && <span className="mb-0.5 block text-[10px] font-semibold text-ink/45">当前教材</span>}
+      <BookOpen size={17} aria-hidden="true" className="shrink-0" />
+      <span className="book-switch-label">
+        <span className="book-switch-caption">选择年级</span>
         <span className="font-extrabold">{book.label}</span>
       </span>
       {!compact && <span className="text-[11px] font-bold text-ink/45">{status(book)}</span>}
-      <ChevronDown size={15} aria-hidden="true" className="shrink-0 text-ink/45" />
+      <ChevronDown size={17} aria-hidden="true" className="book-switch-chevron shrink-0" />
     </button>
     <dialog ref={dialogRef} id={`${id}-dialog`} aria-labelledby={`${id}-title`} className="book-switch-dialog" onCancel={() => setOpen(false)} onClose={() => { if (!dialogRef.current?.open) setOpen(false) }} onKeyDown={event => {
       if (event.key !== 'Tab') return

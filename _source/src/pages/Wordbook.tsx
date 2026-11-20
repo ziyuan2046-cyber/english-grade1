@@ -1,6 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
-import { flushSync } from 'react-dom'
-import { ArrowLeft, ArrowRight, Layers, List, Maximize2, Minimize2, RotateCcw, RotateCw, Search, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, BookA, Layers, List, Maximize2, Minimize2, RotateCcw, Search, X } from 'lucide-react'
 import SpeakButton from '../components/SpeakButton'
 import WordAvatar from '../components/WordAvatar'
 import { BookPlaceholder, useBook } from '../lib/books'
@@ -9,7 +8,7 @@ import { prefetchPronunciations } from '../lib/speak'
 import { wordPicture } from '../data/wordPictures'
 
 const normalize = (value: string) => value.trim().toLowerCase().replaceAll('’', "'")
-type LockableOrientation = ScreenOrientation & { lock?: (mode: 'landscape') => Promise<void> }
+const isPortrait = () => window.matchMedia('(orientation: portrait)').matches
 
 export default function Wordbook() {
   const { book } = useBook()
@@ -21,12 +20,8 @@ export default function Wordbook() {
   const [flipped, setFlipped] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const dialog = useRef<HTMLDialogElement>(null)
-  const stage = useRef<HTMLDivElement>(null)
   const expandButton = useRef<HTMLButtonElement>(null)
-  const orientationLocked = useRef(false)
-  const nativeFullscreen = useRef(false)
-  const closingFullscreen = useRef(false)
-  const pointer = useRef<{ x: number; y: number } | null>(null)
+  const pointer = useRef<{ id: number; x: number; y: number; rotated: boolean } | null>(null)
   const ignoreClick = useRef(false)
 
   const groups = [
@@ -42,55 +37,20 @@ export default function Wordbook() {
   const entry = entries[index]
   const currentWord = entry?.word.en
   const nextWord = entries[index + 1]?.word.en
-  const closeExpanded = () => { closingFullscreen.current = true; setExpanded(false) }
-  const openExpanded = () => {
-    flushSync(() => setExpanded(true))
-    const orientation = window.screen.orientation as LockableOrientation | undefined
-    const element = stage.current
-    orientationLocked.current = false
-    nativeFullscreen.current = false
-    closingFullscreen.current = false
-    if (!element || !window.matchMedia('(pointer: coarse)').matches) return
-    if (document.fullscreenEnabled && element.requestFullscreen) {
-      void element.requestFullscreen().then(async () => {
-        nativeFullscreen.current = true
-        if (!dialog.current?.open) {
-          if (document.fullscreenElement === element) void document.exitFullscreen().catch(() => undefined)
-          nativeFullscreen.current = false
-          return
-        }
-        if (!orientation?.lock) return
-        try {
-          await orientation.lock('landscape')
-          orientationLocked.current = true
-          if (!dialog.current?.open) { orientation.unlock?.(); orientationLocked.current = false }
-        } catch { /* CSS keeps the card landscape when rotation is unavailable. */ }
-      }).catch(() => { /* The rotated dialog remains the fallback. */ })
-    } else if (window.matchMedia('(display-mode: standalone)').matches && orientation?.lock) {
-      void orientation.lock('landscape').then(() => { orientationLocked.current = true }).catch(() => {})
-    }
-  }
+  const closeExpanded = () => setExpanded(false)
+  const openExpanded = () => setExpanded(true)
   useEffect(() => {
     if (view === 'cards' && currentWord) return prefetchPronunciations(currentWord, nextWord)
   }, [view, currentWord, nextWord])
   useLayoutEffect(() => {
-    if (!expanded || !dialog.current || !stage.current) return
+    if (!expanded || !dialog.current) return
     const element = dialog.current
-    const surface = stage.current
-    const orientation = window.screen.orientation as LockableOrientation | undefined
     const overflow = document.body.style.overflow
-    element.showModal()
+    if (!element.open) element.showModal()
     document.body.style.overflow = 'hidden'
-    const onFullscreenChange = () => {
-      if (document.fullscreenElement === surface) nativeFullscreen.current = true
-      else if (nativeFullscreen.current && !closingFullscreen.current) closeExpanded()
-    }
-    document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => {
-      document.removeEventListener('fullscreenchange', onFullscreenChange)
-      if (orientationLocked.current) orientation?.unlock?.()
-      orientationLocked.current = false
-      if (document.fullscreenElement === surface) void document.exitFullscreen().catch(() => undefined)
+      pointer.current = null
+      ignoreClick.current = false
       element.close()
       document.body.style.overflow = overflow
       expandButton.current?.focus({ preventScroll: true })
@@ -101,13 +61,13 @@ export default function Wordbook() {
     setIndex(current => Math.max(0, Math.min(entries.length - 1, current + delta)))
     setFlipped(false)
   }
-  const swipe = (event: PointerEvent<HTMLButtonElement>) => {
+  const swipe = (event: PointerEvent<HTMLButtonElement>, full: boolean) => {
     const start = pointer.current
     pointer.current = null
-    if (!start) return
+    if (!start || start.id !== event.pointerId) return
+    if (start.rotated !== (full && isPortrait())) { ignoreClick.current = true; return }
     const dx = event.clientX - start.x, dy = event.clientY - start.y
-    const rotated = expanded && window.matchMedia('(orientation: portrait)').matches
-    const x = rotated ? dy : dx, y = rotated ? -dx : dy
+    const x = start.rotated ? dy : dx, y = start.rotated ? -dx : dy
     if (Math.abs(x) < 45 || Math.abs(x) < 1.4 * Math.abs(y)) return
     ignoreClick.current = true
     step(x < 0 ? 1 : -1)
@@ -115,6 +75,7 @@ export default function Wordbook() {
   const flashcard = (full = false) => {
     if (!entry) return null
     const picture = wordPicture(entry.word.en, entry.word.emoji)
+    const face = flipped ? entry.word.zh : entry.word.en
     return <section className={full ? 'word-deck word-deck-landscape' : 'word-deck'} aria-label="单词卡片" onKeyDown={event => {
       if (event.altKey || event.ctrlKey || event.metaKey) return
       if (event.key === 'ArrowLeft' && index > 0) { event.preventDefault(); step(-1) }
@@ -124,17 +85,17 @@ export default function Wordbook() {
         <span>{entry.group.title}</span>
         <span className="word-deck-tools"><span aria-live="polite">{index + 1} / {entries.length}</span>
           {full ? <button type="button" aria-label="退出全屏" title="退出全屏" className="word-icon-button" onClick={closeExpanded}><Minimize2 size={20} /></button>
-            : <button type="button" ref={expandButton} aria-haspopup="dialog" aria-label="全屏单词卡片" title="横屏全屏" className="word-icon-button" onClick={openExpanded}><Maximize2 size={20} /></button>}
+            : <button type="button" ref={expandButton} aria-haspopup="dialog" aria-label="全屏单词卡片" title="横屏放大" className="word-icon-button" onClick={openExpanded}><Maximize2 size={20} /></button>}
         </span>
       </div>
       <button type="button" className="word-flashcard" aria-label={flipped ? '翻回单词正面' : '翻看中文释义'}
-        onPointerDown={event => { ignoreClick.current = false; pointer.current = event.pointerType === 'touch' ? { x: event.clientX, y: event.clientY } : null }}
-        onPointerUp={swipe} onPointerCancel={() => { pointer.current = null }}
+        onPointerDown={event => { ignoreClick.current = false; pointer.current = event.pointerType === 'touch' ? { id: event.pointerId, x: event.clientX, y: event.clientY, rotated: full && isPortrait() } : null }}
+        onPointerUp={event => swipe(event, full)} onPointerCancel={() => { pointer.current = null }}
         onClick={event => { if (event.detail > 0 && ignoreClick.current) { ignoreClick.current = false; return }; setFlipped(value => !value) }}>
         <RotateCcw className="word-flip-icon" size={18} aria-hidden="true" />
         <span className="word-emoji" aria-hidden="true">{picture || entry.word.en.charAt(0).toUpperCase()}</span>
         <span className="word-face-copy">
-          <span className={flipped ? 'study-word study-word-translation' : 'study-word'}>{flipped ? entry.word.zh : entry.word.en}</span>
+          <span className={flipped ? 'study-word study-word-translation' : 'study-word'} data-long={face.length > (flipped ? 8 : 14) || undefined}>{face}</span>
           <span className="word-pronunciation">{flipped ? entry.word.en : [entry.word.ipa, entry.word.form].filter(Boolean).join(' · ')}</span>
         </span>
       </button>
@@ -148,7 +109,7 @@ export default function Wordbook() {
 
   return <main className="wordbook-view">
     <header className="study-heading">
-      <h1>单词本</h1>
+      <h1><BookA size={25} aria-hidden="true" />单词本</h1>
       {total > 0 && <span>{partial ? '参考词汇' : '全册词汇'} · {total} 词</span>}
     </header>
     {!book.available ? <BookPlaceholder section="单词" /> : <div className="wordbook-layout">
@@ -179,8 +140,7 @@ export default function Wordbook() {
           : view === 'cards' ? <>
             {flashcard()}
             <dialog ref={dialog} className="word-fullscreen" aria-label="全屏单词卡片" onCancel={event => { event.preventDefault(); closeExpanded() }} onClose={() => { if (!dialog.current?.open) closeExpanded() }}>
-              <div className="word-rotate-hint" role="status"><RotateCw size={18} aria-hidden="true" />横过手机，卡片会自动转为横屏</div>
-              {expanded && <div ref={stage} className="word-landscape-stage">{flashcard(true)}</div>}
+              {expanded && <div className="word-landscape-stage">{flashcard(true)}</div>}
             </dialog>
           </> : <div className="word-list">{filtered.map(group => <section key={group.id}>
             <h2>{group.title} <span>{group.words.length} 词</span></h2>

@@ -28,12 +28,12 @@ export default function Layout() {
   return <div className={`mx-auto min-h-[100dvh] w-full ${wide ? 'max-w-[70rem]' : 'max-w-[46rem]'} ${track ? 'pb-[22rem]' : 'pb-28'}`}>
     {pathname !== '/' && <>
       <div className="study-topbar flex items-center justify-between gap-2">
-        <Link to={`/?book=${book.id}`} className="study-secondary"><ArrowLeft size={18} aria-hidden="true" /> 外研英语</Link>
+        <Link to={`/?book=${book.id}`} className="study-back"><ArrowLeft size={17} aria-hidden="true" /> 返回首页</Link>
         <BookPicker compact />
       </div>
       <div className="px-4"><BookStatusNotice /></div>
     </>}
-    <div key={book.id} data-book-content={book.id}><Outlet /></div>
+    <div key={book.id} className={pathname === '/' ? undefined : 'study-page'} data-book-content={book.id}><Outlet /></div>
     <MiniPlayer />
     <nav aria-label="主导航" className="study-nav fixed inset-x-0 bottom-0 z-50">
       <div className="mx-auto flex max-w-[46rem] items-stretch">
