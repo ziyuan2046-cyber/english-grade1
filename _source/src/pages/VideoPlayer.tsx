@@ -169,15 +169,6 @@ export default function VideoPlayer() {
 
   return (
     <div className="pb-6">
-      <header className="px-4 pb-2 pt-5">
-        <Link
-          to={`/unit/${unit.id}?tab=videos`}
-          className="inline-flex items-center gap-1.5 rounded-full bg-white/75 px-3.5 py-2 text-sm font-bold text-ink/70 shadow-soft backdrop-blur"
-        >
-          <ArrowLeft size={16} /> 返回 {unit.code} · {unit.titleZh}
-        </Link>
-      </header>
-
       <div className="px-3">
         {/* ===== 播放器（可全屏） ===== */}
         <div
