@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type PointerEvent } from 'react'
 import { flushSync } from 'react-dom'
-import { ArrowLeft, ArrowRight, Layers, List, Maximize2, Minimize2, RotateCcw, Search, X } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Layers, List, Maximize2, Minimize2, RotateCcw, RotateCw, Search, X } from 'lucide-react'
 import SpeakButton from '../components/SpeakButton'
 import WordAvatar from '../components/WordAvatar'
 import { BookPlaceholder, useBook } from '../lib/books'
@@ -23,6 +23,9 @@ export default function Wordbook() {
   const dialog = useRef<HTMLDialogElement>(null)
   const stage = useRef<HTMLDivElement>(null)
   const expandButton = useRef<HTMLButtonElement>(null)
+  const orientationLocked = useRef(false)
+  const nativeFullscreen = useRef(false)
+  const closingFullscreen = useRef(false)
   const pointer = useRef<{ x: number; y: number } | null>(null)
   const ignoreClick = useRef(false)
 
@@ -39,21 +42,33 @@ export default function Wordbook() {
   const entry = entries[index]
   const currentWord = entry?.word.en
   const nextWord = entries[index + 1]?.word.en
-  const closeExpanded = () => setExpanded(false)
+  const closeExpanded = () => { closingFullscreen.current = true; setExpanded(false) }
   const openExpanded = () => {
     flushSync(() => setExpanded(true))
-    const element = stage.current
     const orientation = window.screen.orientation as LockableOrientation | undefined
-    if (!element || !orientation?.lock || !window.matchMedia('(pointer: coarse)').matches) return
-    const lock = () => {
-      if (!element.isConnected || !dialog.current?.open) return
-      void orientation.lock?.('landscape').then(() => {
-        if (!element.isConnected || !dialog.current?.open) orientation.unlock?.()
-      }).catch(() => { /* the CSS stage still presents a horizontal layout */ })
-    }
+    const element = stage.current
+    orientationLocked.current = false
+    nativeFullscreen.current = false
+    closingFullscreen.current = false
+    if (!element || !window.matchMedia('(pointer: coarse)').matches) return
     if (document.fullscreenEnabled && element.requestFullscreen) {
-      void element.requestFullscreen().then(lock).catch(() => { /* keep the dialog open */ })
-    } else if (window.matchMedia('(display-mode: standalone)').matches) lock()
+      void element.requestFullscreen().then(async () => {
+        nativeFullscreen.current = true
+        if (!dialog.current?.open) {
+          if (document.fullscreenElement === element) void document.exitFullscreen().catch(() => undefined)
+          nativeFullscreen.current = false
+          return
+        }
+        if (!orientation?.lock) return
+        try {
+          await orientation.lock('landscape')
+          orientationLocked.current = true
+          if (!dialog.current?.open) { orientation.unlock?.(); orientationLocked.current = false }
+        } catch { /* CSS keeps the card landscape when rotation is unavailable. */ }
+      }).catch(() => { /* The rotated dialog remains the fallback. */ })
+    } else if (window.matchMedia('(display-mode: standalone)').matches && orientation?.lock) {
+      void orientation.lock('landscape').then(() => { orientationLocked.current = true }).catch(() => {})
+    }
   }
   useEffect(() => {
     if (view === 'cards' && currentWord) return prefetchPronunciations(currentWord, nextWord)
@@ -62,18 +77,19 @@ export default function Wordbook() {
     if (!expanded || !dialog.current || !stage.current) return
     const element = dialog.current
     const surface = stage.current
+    const orientation = window.screen.orientation as LockableOrientation | undefined
     const overflow = document.body.style.overflow
     element.showModal()
     document.body.style.overflow = 'hidden'
-    let enteredNative = false
     const onFullscreenChange = () => {
-      if (document.fullscreenElement === surface) enteredNative = true
-      else if (enteredNative) setExpanded(false)
+      if (document.fullscreenElement === surface) nativeFullscreen.current = true
+      else if (nativeFullscreen.current && !closingFullscreen.current) closeExpanded()
     }
     document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => {
       document.removeEventListener('fullscreenchange', onFullscreenChange)
-      if (enteredNative || window.matchMedia('(display-mode: standalone)').matches) window.screen.orientation?.unlock?.()
+      if (orientationLocked.current) orientation?.unlock?.()
+      orientationLocked.current = false
       if (document.fullscreenElement === surface) void document.exitFullscreen().catch(() => undefined)
       element.close()
       document.body.style.overflow = overflow
@@ -163,6 +179,7 @@ export default function Wordbook() {
           : view === 'cards' ? <>
             {flashcard()}
             <dialog ref={dialog} className="word-fullscreen" aria-label="全屏单词卡片" onCancel={event => { event.preventDefault(); closeExpanded() }} onClose={() => { if (!dialog.current?.open) closeExpanded() }}>
+              <div className="word-rotate-hint" role="status"><RotateCw size={18} aria-hidden="true" />横过手机，卡片会自动转为横屏</div>
               {expanded && <div ref={stage} className="word-landscape-stage">{flashcard(true)}</div>}
             </dialog>
           </> : <div className="word-list">{filtered.map(group => <section key={group.id}>

@@ -1,5 +1,5 @@
 {
-  "version": "20261118-waiyan9",
+  "version": "20261120-waiyan10",
   "course": "外研英语",
   "grades": 6,
   "books": 12,
@@ -22,7 +22,7 @@
     "This is Beijing!",
     "Appendices"
   ],
-  "note": "单词卡全屏、列表字号加大、词汇目录全部显示、语义配图与离线发音缓存，移除首页重复快捷入口。",
+  "note": "儿童友好蓝紫主题、单词卡横屏全屏与移动端旋转兜底、统一平板响应式组件样式。",
   "partialReferenceBooks": [
     "g1-down",
     "g2-up",
